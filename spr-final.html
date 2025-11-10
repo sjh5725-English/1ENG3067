@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>자기 주도 문장 읽기 실험 (5ENG3067)</title>
+  <script src="https://unpkg.com/jspsych@8.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.0.0"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@8.0.0/css/jspsych.css">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #fafafa;
+      font-family: Arial, sans-serif;
+    }
+    #jspsych-target {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+      max-width: none; 
+    }
+    .jspsych-display-element {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+    }
+    .word {
+      font-size: 2.5rem;
+      line-height: 3rem;
+      max-width: 90vw;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="jspsych-target"></div>
+
+<script>
+/****************************************************
+ * 기본 설정
+ ****************************************************/
+const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbxQ_luIfGQ6iuceZPZS8efduhS8FioNR13EIvmKfyDXhj2KLOJe67ra8bUmc8rZ83eKQA/exec";
+const link_id = "5ENG3067";
+const participant_id = `${link_id}_${Math.floor(Math.random() * 1000000)}`;
+const exp_id = new Date().toISOString().replace(/[:.-]/g, "_") + "_" + participant_id;
+
+const jsPsych = initJsPsych({
+  show_progress_bar: true,
+  display_element: "jspsych-target",
+  on_finish: async () => {
+    await uploadAllRowsToGoogle();
+  }
+});
+
+/****************************************************
+ * 연습 
+ ****************************************************/
+const practice_stimuli = [
+  {
+    context: "We are studying psycholinguistics and we love it. Psycholinguistics is an interesting and scientific field.",
+    sentence: "Psycholinguistics is the best.",
+    question: "Is psycholinguistics the best?",
+    correct: true
+  }
+];
+
+/****************************************************
+ * 본 실험 (총 9세트)
+ ****************************************************/
+const stimuli_1ENG3067 = [
+  {
+    context: "Steve was watching a soccer game with my friends. While watching the game, John asked us to move to see his family member.",
+    sentence: "I wanted to know if Steve would bring us to his mom after soccer game.",
+    question: "Did Steve want to bring friends to his mother?",
+    correct: false // 5a
+  },
+  {
+    context: "James left work early this afternoon which made Mary curious. He actually went to see a doctor due to sore throat.",
+    sentence: "I wondered who would tell Mary about the doctor tomorrow morning.",
+    question: "Would Mary be told about something today?",
+    correct: false // 4b
+  },
+  {
+    context: "The teacher noticed that a bus route was canceled due to construction. She announced the student that they need to be picked up by their mother.",
+    sentence: "I wondered who the teacher would send the child to afterschool.",
+    question: "Was the child sent to father?",
+    correct: false // 3c
+  },
+  {
+    context: "Earlier this week, the students started a group project in science class. Each team chose a topic related to renewable energy.",
+    sentence: "They will present their findings to the class next Monday.",
+    question: "The presentation will be on next Friday.",
+    correct: false // 7a 
+  },
+  {
+    context: "The teacher reminded the children about the upcoming field trip next week. The students got loud with excitement.",
+    sentence: "I asked if the teacher had introduced the student to his classmates yesterday.",
+    question: "Did the teacher introduce her husband yesterday?",
+    correct: false // 2d 
+  },
+  {
+    context: "John told his friend that he had a family dinner last week. John especially enjoyed the turkey dish his mom cooked.",
+    sentence: "They asked who showed Julie to family during dinner.",
+    question: "Did John join the family dinner?",
+    correct: true // 1e
+  },
+  {
+    context: "Construction workers finished painting the new office space yesterday. Due to the smell of paint, most employees kept their windows open.",
+    sentence: "The manager said the furniture would arrive later this week.",
+    question: "The office has not received the furniture yet.",
+    correct: true // 7b
+  },
+  {
+    context: "Jay was watching the audition program. The judge was the most famous artist in Korea.",
+    sentence: "He wanted to know who the judge compared the dancer to during audition.",
+    question: "Was the dancer compared to someone during audition?",
+    correct: true // 6f
+  },
+  {
+    context: "Alex received a package he ordered online last night. The box was smaller than he expected but everything was neatly packed.",
+    sentence: "He left a short review thanking the seller for the quick delivery.",
+    question: "Alex was satisfied with the delivery.",
+    correct: true //7c
+  }
+];
+
+/****************************************************
+ * trial 
+ ****************************************************/
+function make_trial(context, sentence, question, correct, group="main") {
+  const timeline = [];
+
+  // 십자가
+  timeline.push({
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<div style="font-size: 60px;">+</div>', 
+    choices: "NO_KEYS",
+    trial_duration: 1000, // 1000ms (1초)
+    data: {exp_id, participant_id, group, trial_type: "fixation"}
+  });
+
+  // 1. context: 통째로 제시
+  timeline.push({
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `<div style="font-size:1.8rem;">${context}</div><p>(스페이스바를 눌러 진행)</p>`,
+    choices: [" "],
+    data: {exp_id, participant_id, group, trial_type: "context"}
+  });
+
+  // 2. sentence: 단어별 제시
+  const words = sentence.split(" ");
+  timeline.push({
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `<div class="word">${words.map(w => "_".repeat(w.length)).join(" ")}</div>`,
+    choices: [" "],
+    data: {exp_id, participant_id, group, trial_type: "mask"}
+  });
+
+  // 3. sentence: 단어별 읽기
+  words.forEach((word, i) => {
+    const masked = words.map((w, idx) => (i === idx ? w : "_".repeat(w.length))).join(" ");
+    timeline.push({
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<div class="word">${masked}</div>`,
+      choices: [" "],
+      data: {
+        exp_id,
+        participant_id,
+        group,
+        trial_type: "reading",
+        word_index: i + 1,
+        presented_word: word
+      },
+      on_finish: d => {
+        d.reading_time = d.rt; 
+      }
+    });
+  });
+
+  // 4. comprehension 
+  const comprehension_choices = ["예", "아니오"]; 
+  
+  timeline.push({
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `<p>${question}</p>`,
+    choices: comprehension_choices, 
+    data: {
+      exp_id, 
+      participant_id, 
+      group, 
+      trial_type: "comprehension", 
+      correct_answer: correct,
+      choices_array: comprehension_choices 
+    },
+    on_finish: d => {
+      const choice_index = d.response;
+      const choice_string = d.choices_array[choice_index]; 
+      
+      const correct_choice_string = d.correct_answer ? "예" : "아니오";
+      
+      d.correct = choice_string === correct_choice_string;
+      d.response = choice_string; 
+    }
+  });
+
+  return timeline;
+}
+
+/****************************************************
+ * 화면 구성 (v8 문법)
+ ****************************************************/
+const welcome = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <h2>자기 주도 문장 읽기 실험 (5ENG3067)</h2>
+    <p>문장은 한 단어씩 제시됩니다. 스페이스바를 눌러 단어를 하나씩 읽으세요.</p>
+    <p>질문이 주어질 때에는 “예” 또는 “아니오” 버튼으로 답해주세요.</p>
+    <p>준비되셨다면 “시작하기”를 눌러주세요.</p>
+  `,
+  choices: ["시작하기"]
+};
+
+const demographics = {
+  type: jsPsychSurveyHtmlForm,
+  preamble: "<h3>참가자 정보</h3><p>아래 정보를 입력해주세요.</p>",
+  html: `
+    <p><label>만 나이: <input name="age" type="number" min="10" max="100" required></label></p>
+    <p><label>성별:
+      <select name="gender" required>
+        <option value="" disabled selected>성별을 선택하세요</option>
+        <option value="남성">남성</option>
+        <option value="여성">여성</option>
+      </select></label></p>
+  `,
+  button_label: "다음으로",
+  on_finish: data => {
+    const responses = data.response; 
+    jsPsych.data.addProperties({
+      age: responses.age,
+      gender: responses.gender,
+      exp_id,
+      participant_id
+    });
+  }
+};
+
+const start_practice = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `<h3>연습 시작</h3><p>먼저 1개의 연습 문장을 진행합니다.</p>`,
+  choices: ["시작"]
+};
+
+const start_main = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `<h3>본 실험 시작</h3><p>이제 본 실험으로 넘어갑니다.</p>`,
+  choices: ["시작"]
+};
+
+const end_screen = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `<h3>실험이 끝났습니다.</h3><p>참여해 주셔서 감사합니다!!</p><p>데이터를 전송 중입니다... 잠시만 기다려주세요.</p>`,
+  choices: ["종료"],
+  on_load: () => {
+    const btn = document.querySelector('.jspsych-btn');
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+      document.querySelector('#jspsych-target p:last-child').innerText = '데이터 전송이 완료되었습니다. 종료 버튼을 눌러주세요.';
+    }, 3000);
+  }
+};
+
+/****************************************************
+ * Google Sheet 업로드
+ ****************************************************/
+async function uploadAllRowsToGoogle() {
+  console.log("데이터 업로드 시도...");
+  try {
+    const all = jsPsych.data.get().values();
+    const rows = all.map(d => ({
+      exp_id: d.exp_id || exp_id,
+      participant: d.participant_id || participant_id,
+      trial_type: d.trial_type || "",
+      word_index: d.word_index || "",
+      presented_word: d.presented_word || "",
+      rt: d.reading_time || d.rt || "",
+      correct: d.correct === true ? true : (d.correct === false ? false : ""),
+      response: d.response || "",
+      group: d.group || "",
+      age: d.age || "",
+      gender: d.gender || "",
+      timestamp: new Date().toISOString()
+    }));
+
+    await fetch(GAS_ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rows)
+    });
+
+    console.log("데이터 업로드 완료 (요청 전송됨)");
+  } catch (e) {
+    console.error("업로드 실패:", e);
+  }
+}
+
+/****************************************************
+ * 실행
+ ****************************************************/
+
+// 1. 연습 실험 생성
+const practice_timeline = practice_stimuli.flatMap(s =>
+  make_trial(s.context, s.sentence, s.question, s.correct, "practice")
+);
+
+// 2. 본 실험 stimuli (순서 유지)
+// const shuffled_main_stimuli = jsPsych.randomization.shuffle(stimuli_1ENG3067); 
+const shuffled_main_stimuli = stimuli_1ENG3067; 
+
+// 3. 본 실험 생성
+const main_timeline = shuffled_main_stimuli.flatMap(s => 
+  make_trial(s.context, s.sentence, s.question, s.correct, "main")
+);
+
+// 4. 전체 타임라인 구성 및 실행
+jsPsych.run([
+  welcome,
+  demographics,
+  start_practice,
+  ...practice_timeline, 
+  start_main,
+  ...main_timeline,
+  end_screen
+]);
+</script>
+</body>
+</html>
