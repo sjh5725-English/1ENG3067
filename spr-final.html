@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>자기 주도 문장 읽기 실험 (5ENG3067)</title>
+  <title>자기 주도 문장 읽기 실험 (1ENG3067)</title>
   <script src="https://unpkg.com/jspsych@8.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
@@ -51,7 +51,7 @@
  * 기본 설정
  ****************************************************/
 const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbxQ_luIfGQ6iuceZPZS8efduhS8FioNR13EIvmKfyDXhj2KLOJe67ra8bUmc8rZ83eKQA/exec";
-const link_id = "5ENG3067";
+const link_id = "1ENG3067";
 const participant_id = `${link_id}_${Math.floor(Math.random() * 1000000)}`;
 const exp_id = new Date().toISOString().replace(/[:.-]/g, "_") + "_" + participant_id;
 
@@ -223,7 +223,7 @@ function make_trial(context, sentence, question, correct, group="main") {
 const welcome = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <h2>자기 주도 문장 읽기 실험 (5ENG3067)</h2>
+    <h2>자기 주도 문장 읽기 실험 (1ENG3067)</h2>
     <p>문장은 한 단어씩 제시됩니다. 스페이스바를 눌러 단어를 하나씩 읽으세요.</p>
     <p>질문이 주어질 때에는 “예” 또는 “아니오” 버튼으로 답해주세요.</p>
     <p>준비되셨다면 “시작하기”를 눌러주세요.</p>
